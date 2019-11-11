@@ -11,19 +11,24 @@ const express     =   require('express'),
       mongoose    =   require('mongoose'),
       multer      =   require('multer');
 
-const upload = multer({
-    dest: path.join(__dirname, 'uploads')
-});
 
-/*
-* Contollers
-*/
+
 
 /*
 * Create Express server
 */
 
 const app = express();
+
+/*
+* Connect to MongoDB
+*/
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI || `mongodb://localhost:27017/bond_mern_app`)
+
+/*
+* Express configuration
+*/
 
 app.use(bodyParser.json());
 if (process.env.NODE_ENV === 'production') {
@@ -36,14 +41,13 @@ if (process.env.NODE_ENV === 'production') {
   
   }
 
-/*
-* Connect to MongoDB
-*/
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI || `mongodb://localhost:27017/bond_mern_app`)
+const upload = multer({
+    dest: path.join(__dirname, 'uploads')
+});
+
 
 /*
-* Express configuration
+* Contollers
 */
 
 /*
