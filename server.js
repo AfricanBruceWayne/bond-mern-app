@@ -7,6 +7,7 @@ const express     =   require('express'),
       bodyParser  =   require('body-parser'),
       chalk       =   require('chalk'),
       flash       =   require('express-flash'),
+      MongoStore  =   require('connect-mongo')(session),
       path        =   require('path'),
       mongoose    =   require('mongoose'),
       multer      =   require('multer');
@@ -24,13 +25,35 @@ const app = express();
 * Connect to MongoDB
 */
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI || `mongodb://localhost:27017/bond_mern_app`)
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useNewUrlParser', true);
+mongoose.connect(process.env.MONGODB_URI || `mongodb://localhost:27017/bond_mern_app`);
+mongoose.connection.on('error', (err) => {
+  console.log(err);
+  console.log('%s MongoDB connection error. Please make sure MongoDB is running.', chalk.red('✗'));
+  process.exit();
+});
 
 /*
 * Express configuration
 */
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  secret: '343ji43j4n3jn4jk3n',
+  cookie: { maxAge: 1209600000 },
+  store: new MongoStore({
+    url: process.env.MONGODB_URI,
+    autoReconnect: true,
+  })
+}));
+
+app.use(flash());
+
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('client/build'));
   
